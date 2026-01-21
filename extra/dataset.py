@@ -3,7 +3,8 @@ import os
 import shutil
 from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
 import matplotlib
-#matplotlib.use("TKAgg")
+
+# matplotlib.use("TKAgg")
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
@@ -38,19 +39,29 @@ class Dataset:
         if os.path.exists(self.path):
             shutil.rmtree(self.path)
 
-    def from_raw(self, raw_path, preprocess, fraction=1, skew=False, normalize=False, max=0, equal=False):
+    def from_raw(
+        self,
+        raw_path,
+        preprocess,
+        fraction=1,
+        skew=False,
+        normalize=False,
+        max=0,
+        equal=False,
+    ):
         if preprocess is None:
             raise Exception("Preprocess not defined")
 
         preprocess(
+            fig_name=self.name,
             src=raw_path,
             out=self.path,
             n_classes=self.n_classes,
             fraction=fraction,
             skew=skew,
             normalize=normalize,
-            max= max,
-            equal=equal
+            max=max,
+            equal=equal,
         )
 
         self.loaded = True
@@ -58,9 +69,15 @@ class Dataset:
     def from_datasets(self, datasets=[]):
         for dataset in datasets:
             if dataset.loaded:
-                self.train_df = pd.concat([self.train_df, dataset.train_df], ignore_index=True)
-                self.val_df = pd.concat([self.val_df, dataset.val_df], ignore_index=True)
-                self.test_df = pd.concat([self.test_df, dataset.test_df], ignore_index=True)
+                self.train_df = pd.concat(
+                    [self.train_df, dataset.train_df], ignore_index=True
+                )
+                self.val_df = pd.concat(
+                    [self.val_df, dataset.val_df], ignore_index=True
+                )
+                self.test_df = pd.concat(
+                    [self.test_df, dataset.test_df], ignore_index=True
+                )
 
                 shutil.copytree(
                     dataset.images_path, self.images_path, dirs_exist_ok=True
@@ -86,15 +103,20 @@ class Dataset:
 
         # Make plot
         plt.figure(figsize=(10, 5))
-        plt.bar(class_labels, class_distribution,
-                color=color, width=1, edgecolor="k")
+        plt.bar(class_labels, class_distribution, color=color, width=1, edgecolor="k")
         plt.title(f"{title}    nImages: {str(len(df))}")
         plt.xticks(rotation=90)
         plt.xlabel("Classes")
         plt.ylabel("Instances")
-        plt.yticks(np.arange(0, max(class_distribution) + int(max(class_distribution)/10), int(max(class_distribution)/10)))
-        plt.ylim(0,max(class_distribution))
-        #plt.show()
+        plt.yticks(
+            np.arange(
+                0,
+                max(class_distribution) + int(max(class_distribution) / 10),
+                int(max(class_distribution) / 10),
+            )
+        )
+        plt.ylim(0, max(class_distribution))
+        # plt.show()
         plt.savefig(self.name + title, bbox_inches="tight")
 
     def get_distribution(self):
@@ -108,14 +130,13 @@ class Dataset:
                 if os.path.isfile(os.path.join(self.labels_path, split, file)):
                     filename, extension = os.path.splitext(file)
                     image_names_column.append(filename + ".jpg")
-                    with open(os.path.join(self.labels_path,split, file)) as txt:
+                    with open(os.path.join(self.labels_path, split, file)) as txt:
                         orig_labels = []
                         for line in txt:
                             words = line.split()
                             orig_labels.append(int(words[0]))
                             total_labels.append(int(words[0]))
                         labels_column.append(orig_labels)
-
 
         # Create csv data
         csv_rows = zip(image_names_column, labels_column)
@@ -140,7 +161,7 @@ class Dataset:
         class_list = list(filter(lambda x: x != "images", df.columns))
 
         self.show_distribution(self.name, class_list, df)
-            
+
     def generate_split_df(self, train, val, test, debug=False):
 
         labels_column = []
@@ -318,15 +339,15 @@ class Dataset:
 
         # Data to be written to the YAML file
         data = {
-            'path': self.path,
-            'train': 'images/train',
-            'val': 'images/val',
-            'test': 'images/test',
-            'names': labeled_classes
+            "path": self.path,
+            "train": "images/train",
+            "val": "images/val",
+            "test": "images/test",
+            "names": labeled_classes,
         }
 
         # Writing the data to a YAML file
-        with open(yaml_path, 'w') as file:
+        with open(yaml_path, "w") as file:
             yaml.dump(data, file)
 
         model = YOLO(base_model)
@@ -351,7 +372,9 @@ class Dataset:
                 multi_scale=True,
                 name=f"{self.name}_noAug",
             )
-            model.val(data=yaml_path, split="test", plots=True, name=f"{self.name}_noAug_Test")
+            model.val(
+                data=yaml_path, split="test", plots=True, name=f"{self.name}_noAug_Test"
+            )
         else:
             model.train(
                 data=yaml_path,
@@ -365,6 +388,7 @@ class Dataset:
                 multi_scale=True,
                 name=self.name,
             )
-            model.val(data=yaml_path, split="test", plots=True, name=f"{self.name}_Test")
+            model.val(
+                data=yaml_path, split="test", plots=True, name=f"{self.name}_Test"
+            )
         model.export(format="torchscript")
-        

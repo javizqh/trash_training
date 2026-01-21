@@ -238,7 +238,7 @@ def load_synth_dt(prep, fraction):
 
 
 if __name__ == "__main__":
-    prep = Preprocess(n_classes=len(orig_classes))
+    prep = Preprocess(n_classes=len(orig_classes), class_map=orig_classes)
 
     real_dts = load_real_dt(prep)
     #synth_dts = load_synth_dt(prep, 0.1)
