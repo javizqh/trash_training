@@ -118,6 +118,7 @@ class Dataset:
         plt.ylim(0, max(class_distribution))
         # plt.show()
         plt.savefig(self.name + title, bbox_inches="tight")
+        plt.close()
 
     def get_distribution(self):
         labels_column = []

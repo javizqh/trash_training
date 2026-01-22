@@ -117,6 +117,7 @@ class Preprocess:
         plt.ylim(0, max(class_distribution))
         # plt.show()
         plt.savefig(name + title, bbox_inches="tight")
+        plt.close()
 
     def mantain(
         self,
@@ -220,6 +221,7 @@ class Preprocess:
                 # Display the plot
                 # plt.show()
                 plt.savefig(f"{src}_Area_of_{self.class_map[i]}", bbox_inches="tight")
+                plt.close()
 
         if equal:
             cl_limit = np.max(cl_instances)
@@ -430,6 +432,7 @@ class Preprocess:
         plt.ylim(0, max(sd.values()))
         # plt.show()
         plt.savefig(f"{src}_DA-Crop", bbox_inches="tight")
+        plt.close()
 
     def r_crop_splited(
         self,
@@ -689,6 +692,7 @@ class Preprocess:
         plt.ylim(0, np.max(list(sd.values())))
         # plt.show()
         plt.savefig(f"{src}_DA-Crop", bbox_inches="tight")
+        plt.close()
 
     def fill(self, src, out, n_classes=0, fraction=1, skew=False, normalize=False):
         images_src = os.path.join(src, "images")
