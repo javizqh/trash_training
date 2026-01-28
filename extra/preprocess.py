@@ -2,6 +2,7 @@ import collections
 import os
 from PIL import Image, ExifTags
 import re
+import sys
 import matplotlib
 
 # matplotlib.use("TKAgg")
@@ -618,10 +619,15 @@ class Preprocess:
                         distribution[str(series_name)] = 0
 
                     existing = df[df[series_name] == 1]
+
+                    if len(existing["images"]) == 0:
+                        continue
+
                     n_missing = limit - cl_instances[series_name]
                     appendix = 0
 
                     while True:
+                        sys.stdout.flush()
                         if n_missing == 0:
                             break
 
