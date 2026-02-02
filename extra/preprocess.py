@@ -307,7 +307,7 @@ class Preprocess:
         distribution = {}
         area_list = [[None]] * self.n_classes
 
-        for split in ["train", "val", "test"]:
+        for split in ["train", "val"]:
             labels_column = []
             total_labels = []
             image_names_column = []
