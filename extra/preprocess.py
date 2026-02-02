@@ -55,13 +55,14 @@ def img_rotate(im: Image) -> Image:
 
 
 class Preprocess:
-    def __init__(self, img_h=640, img_w=640, map_labels=None, n_classes=0, class_map={}):
+    def __init__(
+        self, img_h=640, img_w=640, map_labels=None, n_classes=0, class_map={}
+    ):
         self.img_h = img_h
         self.img_w = img_w
         self.map_labels = map_labels
         self.n_classes = n_classes
         self.class_map = class_map
-
 
     def __load_label(self, file):
         with open(file) as f:
@@ -170,7 +171,7 @@ class Preprocess:
                     for line in data:
                         [name, x, y, w, h] = line.rstrip().split(" ")
 
-                        pixel_area = float(w)*float(h)
+                        pixel_area = float(w) * float(h)
 
                         if normalize:
                             x = float(x) / width
@@ -212,12 +213,14 @@ class Preprocess:
                 data = np.array(sorted(class_area))
 
                 plt.figure(figsize=(10, 5))
-                plt.hist(data, bins=30,range=[0,640*640], color="blue", edgecolor='black')
+                plt.hist(
+                    data, bins=30, range=[0, 640 * 640], color="blue", edgecolor="black"
+                )
 
                 # Adding labels and title
-                plt.xlabel('Pixel Area')
-                plt.ylabel('Instances')
-                plt.title(f'Area of instances of {self.class_map[i]}')
+                plt.xlabel("Pixel Area")
+                plt.ylabel("Instances")
+                plt.title(f"Area of instances of {self.class_map[i]}")
 
                 # Display the plot
                 # plt.show()
@@ -281,159 +284,6 @@ class Preprocess:
                         if is_empty:
                             os.remove(new_img)
                             os.remove(new_label)
-
-    def r_crop(
-        self,
-        src,
-        out,
-        n_classes=0,
-        fraction=1,
-        skew=False,
-        normalize=False,
-        max=0,
-        equal=False,
-    ):
-        images_src = os.path.join(src, "images")
-        labels_src = os.path.join(src, "labels")
-        images_out = os.path.join(out, "images")
-        labels_out = os.path.join(out, "labels")
-
-        files = self.__get_images(images_src, fraction)
-
-        if max > 0:
-            cl_instances = np.zeros(
-                len(np.where(np.array(self.map_labels) >= 0)[0]), dtype=int
-            )
-            cl_limit = 150
-        distribution = {}
-
-        for f in files:
-            if f.endswith(".jpg"):
-                filename, extension = os.path.splitext(f)
-
-                img = os.path.join(images_src, filename + extension)
-                label = os.path.join(labels_src, filename + ".txt")
-
-                im = self.__load_img(img)
-                data = self.__load_label(label)
-
-                width, height = im.size
-
-                max_width = int(width * self.img_w / height)
-                max_height = int(height * self.img_h / width)
-
-                new_size = (self.img_w, self.img_h)
-
-                if width < height:
-                    new_size = (self.img_h, max_height)
-                elif width > height:
-                    new_size = (max_width, self.img_w)
-
-                im = im.resize(new_size)
-
-                index = 0
-                # print(cl_instances)
-                for i in range(0, new_size[0], self.img_h):
-                    for j in range(0, new_size[1], self.img_w):
-                        new_img = os.path.join(images_out, f"{filename}_{index}.jpg")
-                        new_label = os.path.join(labels_out, f"{filename}_{index}.txt")
-
-                        start_x = (
-                            i
-                            if i + self.img_h < new_size[0]
-                            else new_size[0] - self.img_h
-                        )
-                        start_y = (
-                            j
-                            if j + self.img_w < new_size[1]
-                            else new_size[1] - self.img_w
-                        )
-                        im_crop = (
-                            start_x,
-                            start_y,
-                            start_x + self.img_w,
-                            start_y + self.img_h,
-                        )
-                        im2 = im.crop(im_crop)
-                        instances = 0
-                        with open(new_label, "w") as f:
-                            for line in data:
-                                try:
-                                    [name, x, y, w, h] = line.rstrip().split(" ")
-                                    if int(name) > n_classes:
-                                        continue
-
-                                    if normalize:
-                                        x = float(x) / width
-                                        y = float(y) / height
-                                        w = float(w) / width
-                                        h = float(h) / height
-
-                                    if skew:
-                                        x = float(x) + float(w) / 2
-                                        y = float(y) + float(h) / 2
-
-                                    x = int(float(x) * new_size[0] - start_x)
-                                    y = int(float(y) * new_size[1] - start_y)
-                                    w = int(float(w) * new_size[0])
-                                    h = int(float(h) * new_size[1])
-
-                                    if (
-                                        x - w / 2 > 640
-                                        or y - h / 2 > 640
-                                        or x + w / 2 < 0
-                                        or y + h / 2 < 0
-                                    ):
-                                        continue
-
-                                    name = self.__get_mapped_class(name)
-
-                                    if name == "-1":
-                                        continue
-
-                                    if max > 0:
-                                        if cl_instances[int(name)] >= cl_limit:
-                                            continue
-
-                                        cl_instances[int(name)] += 1
-
-                                    x = clamp(x / self.img_w, 0, 640)
-                                    y = clamp(y / self.img_h, 0, 640)
-                                    w = clamp(w / self.img_w, 0, 640)
-                                    h = clamp(h / self.img_h, 0, 640)
-
-                                    f.write(f"{name} {x} {y} {w} {h}\n")
-                                    instances += 1
-                                except Exception:
-                                    pass
-                        if instances == 0:
-                            os.remove(new_label)
-                        else:
-                            im2.save(new_img)
-                        index += 1
-
-                try:
-                    distribution[str(index)] += 1
-                except:
-                    distribution[str(index)] = 1
-
-        a = list(distribution.keys())
-        a.sort()
-        sd = {i: distribution[i] for i in a}
-        color = plt.cm.viridis(np.linspace(0, 1, len(sd.values())))
-
-        # Make plot
-        plt.figure(figsize=(10, 5))
-        plt.bar(sd.keys(), sd.values(), color=color, width=1, edgecolor="k")
-        plt.title(f"{src}    DA-Crop")
-        plt.xticks(rotation=90)
-        plt.xlabel("N new images")
-        plt.ylabel("Instances")
-        plt.yticks(np.arange(0, max(sd.values()), int(max(sd.values()) / 10)))
-        plt.ylim(0, max(sd.values()))
-        # plt.show()
-        plt.savefig(f"{src}_DA-Crop", bbox_inches="tight")
-        plt.close()
 
     def r_crop_splited(
         self,
@@ -559,9 +409,9 @@ class Preprocess:
                                         total_labels.append(int(name))
 
                                         if area_list[int(name)] == [None]:
-                                            area_list[int(name)] = [w*h]
+                                            area_list[int(name)] = [w * h]
                                         else:
-                                            area_list[int(name)].append(w*h)
+                                            area_list[int(name)].append(w * h)
 
                                         f.write(f"{name} {x} {y} {w} {h}\n")
                                         instances += 1
@@ -782,97 +632,3 @@ class Preprocess:
                             f.write(f"{name} {x} {y} {w} {h}\n")
                         except Exception:
                             pass
-
-    # def center_crop(self, src, out, n_classes=0, fraction=1, skew=False, normalize=False):
-    #     images_src = os.path.join(src, "images")
-    #     labels_src = os.path.join(src, "labels")
-    #     images_out = os.path.join(out, "images")
-    #     labels_out = os.path.join(out, "labels")
-
-    #     for f in self.__get_images(images_src, fraction):
-    #         if f.endswith(".jpg"):
-    #             filename, extension = os.path.splitext(f)
-
-    #             img = os.path.join(images_src, filename + extension)
-    #             label = os.path.join(labels_src, filename + ".txt")
-
-    #             im = self.__load_img(img)
-    #             data = self.__load_label(label)
-
-    #             width, height = im.size
-
-    #             if width == height:
-    #                 im = im.resize((self.img_w, self.img_h))
-    #                 im.save(img)
-    #                 print("No resize", img)
-    #                 continue
-
-    #             index = 0
-    #             try:
-    #                 for line in data:
-    #                     [name, x, y, w, h] = line.rstrip().split(" ")
-    #                     x = int(float(x) * width)
-    #                     y = int(float(y) * height)
-    #                     w = int(float(w) * width)
-    #                     h = int(float(h) * height)
-
-    #                     f_w = w
-    #                     f_h = h
-
-    #                     if w < self.img_w:
-    #                         f_w = self.img_w
-
-    #                     if h < self.img_h:
-    #                         f_h = self.img_h
-
-    #                     f_h = max(f_h, f_w)
-    #                     f_w = f_h
-
-    #                     max_increase = min(
-    #                         int(x - f_w / 2),
-    #                         int(y - f_h / 2),
-    #                         width - int(x + f_w / 2),
-    #                         height - int(y + f_h / 2),
-    #                     )
-    #                     f_h += max_increase * 2
-    #                     f_w += max_increase * 2
-
-    #                     final_max_bbox = (
-    #                         (int(x - f_w / 2), int(y - f_h / 2)),
-    #                         (int(x + f_w / 2), int(y + f_h / 2)),
-    #                     )
-
-    #                     im2 = im.crop(
-    #                         (
-    #                             final_max_bbox[0][0],
-    #                             final_max_bbox[0][1],
-    #                             final_max_bbox[1][0],
-    #                             final_max_bbox[1][1],
-    #                         )
-    #                     )
-    #                     im2 = im2.resize((640, 640))
-    #                     im2.save(
-    #                         os.path.join(
-    #                             images_path, f"{filename}_{index}{extension}")
-    #                     )
-    #                     with open(
-    #                         os.path.join(
-    #                             labels_path, f"{filename}_{index}.txt"), "w"
-    #                     ) as f:
-    #                         new_w = float(w) / f_w
-    #                         new_h = float(h) / f_h
-    #                         new_x = 0.5
-    #                         new_y = 0.5
-
-    #                         # print(f"{name} {new_x} {new_y} {new_w} {new_h}")
-    #                         f.write(f"{name} {new_x} {new_y} {new_w} {new_h}")
-
-    #                     index += 1
-    #             except Exception:
-    #                 im = im.resize((640, 640))
-    #                 im.save(img)
-    #                 print("Failed to crop", img)
-    #                 continue
-
-    #             os.remove(img)
-    #             os.remove(label)
