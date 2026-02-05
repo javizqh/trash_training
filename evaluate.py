@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 width, height = im.size
                 try:
                     metrics = model.val(data=yaml_path, plots=False)
-                except:
+                except Exception:
                     continue
                 for line in data:
                     [name, x, y, w, h] = line.rstrip().split(" ")
