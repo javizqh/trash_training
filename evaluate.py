@@ -189,6 +189,6 @@ if __name__ == "__main__":
             ax.set_xticklabels(bins[:-1], rotation=90)
             ax.set_title(f"{orig_classes[index]}")
             ax.set_xlabel("Area of instance: in pixels")
-            ax.set_ylabel("mAP 0.5-0.95")
+            ax.set_ylabel("mAp 0.5-0.95")
             plt.savefig(f"area/{orig_classes[index]}", bbox_inches="tight")
             plt.close()
