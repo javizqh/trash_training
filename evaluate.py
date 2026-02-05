@@ -156,7 +156,7 @@ if __name__ == "__main__":
                 for line in data:
                     [name, x, y, w, h] = line.rstrip().split(" ")
 
-                    pixel_area = float(w) * float(h)
+                    pixel_area = int(float(w) * width * float(h) * height)
                     mAp = metrics.box.maps[int(name)]
                     if area_list[int(name)] == [None]:
                         area_list[int(name)] = [(pixel_area, mAp)]
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             ax.plot(np.linspace(1, 20, 20), hist / np.sum(hist), "r+")
             ax.set_xticklabels(bins[:-1], rotation=90)
             ax.set_title(f"{orig_classes[index]}")
-            ax.set_xlabel("Area of instance")
+            ax.set_xlabel("Area of instance: in pixels")
             ax.set_ylabel("mAP 0.5-0.95")
             plt.savefig(f"area/{orig_classes[index]}", bbox_inches="tight")
             plt.close()
