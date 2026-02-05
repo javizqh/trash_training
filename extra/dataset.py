@@ -355,11 +355,11 @@ class Dataset:
         if not aug:
             model.train(
                 data=yaml_path,
-                epochs=1000,
+                epochs=200,
                 patience=100,
                 lr0=0.001,
                 lrf=0.001,
-                batch=64,
+                batch=8,
                 hsv_h=0,
                 hsv_s=0,
                 hsv_v=0,
@@ -379,11 +379,11 @@ class Dataset:
         else:
             model.train(
                 data=yaml_path,
-                epochs=2000,
+                epochs=200,
                 patience=100,
                 lr0=0.001,
                 lrf=0.001,
-                batch=64,
+                batch=8,
                 project=out,
                 device=-1,
                 multi_scale=True,

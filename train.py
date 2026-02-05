@@ -32,7 +32,7 @@ orig_classes = {
     24: "Straw",
     25: "Styrofoam piece",
     26: "Unlabeled litter",
-    27: "Cigarette"
+    27: "Cigarette",
 }
 
 red_classes = {
@@ -49,7 +49,7 @@ red_classes = {
     10: "Scrap metal",
     11: "Styrofoam piece",
     12: "Unlabeled litter",
-    13: "Cigarette"
+    13: "Cigarette",
 }
 
 red_classes_map = [
@@ -93,7 +93,7 @@ ultra_red_classes = {
     5: "Cup",
     6: "Food waste",
     7: "Glass",
-    8: "Plastic"
+    8: "Plastic",
 }
 
 ultra_red_classes_map = [
@@ -178,87 +178,37 @@ def load_real_dt(prep):
     real_dts = []
 
     taco = Dataset("TACO", "./datasets/TACO", 28, orig_classes)
-    taco.from_raw("./datasets/TACOraw", prep.mantain,skew=True, normalize=True)
+    taco.from_raw("./datasets/TACOraw", prep.mantain, skew=True, normalize=True)
     taco.split(val=0.15, test=0.15)
     taco.from_raw("./datasets/TACO", prep.r_crop_splited, equal=True)
-    taco.train(orig_classes, "New-Results", base_model="yolo11s.pt",aug=True)
+    taco.train(orig_classes, "New-Results", base_model="yolo11s.pt")
     real_dts.append(taco)
 
     ext_taco = Dataset("ExtendedTACO", "./datasets/ExtendedTACO", 28, orig_classes)
-    ext_taco.from_raw("./datasets/ExtendedTACOraw", prep.mantain,skew=True, normalize=True)
+    ext_taco.from_raw(
+        "./datasets/ExtendedTACOraw", prep.mantain, skew=True, normalize=True
+    )
     ext_taco.split(val=0.15, test=0.15)
     ext_taco.from_raw("./datasets/ExtendedTACO", prep.r_crop_splited, equal=True)
-    ext_taco.train(orig_classes, "New-Results", base_model="yolo11s.pt",aug=True)
-    #real_dts.append(ext_taco)
+    ext_taco.train(orig_classes, "New-Results", base_model="yolo11s.pt", aug=True)
+    # real_dts.append(ext_taco)
 
     uav = Dataset("UAVWaste", "./datasets/UAVWaste", 28, orig_classes)
     uav.from_raw("./datasets/UAVWasteraw", prep.mantain)
     uav.split()
     uav.from_raw("./datasets/UAVWaste", prep.r_crop_splited, equal=True)
-    uav.train(orig_classes, "New-Results", base_model="yolo11s.pt",aug=True)
+    uav.train(orig_classes, "New-Results", base_model="yolo11s.pt", aug=True)
     real_dts.append(uav)
 
     return real_dts
-
-def load_real_dt2(prep):
-    real_dts = []
-
-    taco = Dataset("TACO", "./datasets/TACO", 28, orig_classes)
-    taco.from_raw("./datasets/TACOraw", prep.mantain,skew=True, normalize=True, equal=True)
-    taco.split(val=0.15, test=0.15)
-    taco.from_raw("./datasets/TACO", prep.r_crop_splited)
-    taco.train(n_150_classes, "New-Results", base_model="yolo11s.pt",aug=True)
-    real_dts.append(taco)
-
-    ext_taco = Dataset("ExtendedTACO", "./datasets/ExtendedTACO", 28, orig_classes)
-    ext_taco.from_raw("./datasets/ExtendedTACOraw", prep.mantain,skew=True, normalize=True, equal=True)
-    ext_taco.split(val=0.15, test=0.15)
-    ext_taco.from_raw("./datasets/ExtendedTACO", prep.r_crop_splited)
-    ext_taco.train(n_150_classes, "New-Results", base_model="yolo11s.pt",aug=True)
-    #real_dts.append(ext_taco)
-
-    uav = Dataset("UAVWaste", "./datasets/UAVWaste", 28, orig_classes)
-    uav.from_raw("./datasets/UAVWasteraw", prep.mantain, equal=True)
-    uav.split()
-    uav.from_raw("./datasets/UAVWaste", prep.r_crop_splited)
-    uav.train(n_150_classes, "New-Results", base_model="yolo11s.pt",aug=True)
-    real_dts.append(uav)
-
-    return real_dts
-
-def load_synth_dt(prep, fraction):
-    synth_dts = []
-
-    synth = Dataset("Synth", "./datasets/Synth", 28, orig_classes)
-    synth.from_raw("./datasets/SyntheticOrig", prep.mantain, fraction=fraction)
-    synth.split(test=0)
-    synth_dts.append(synth)
-
-    return synth_dts
 
 
 if __name__ == "__main__":
     prep = Preprocess(n_classes=len(orig_classes), class_map=orig_classes)
 
-    real_dts = load_real_dt(prep)
-    #synth_dts = load_synth_dt(prep, 0.1)
-
-    real = Dataset("UAVTACO", "./datasets/UAVTACO", 28, orig_classes)
-    real.from_datasets(real_dts)
-    real.get_distribution()
-    real.train(orig_classes, "New-Results-Equal", base_model="yolo11s.pt",aug=True)
-    
-    # for dt in real_dts:
-    #     dt.delete()
-    
-    
-    #real.train(ultra_red_classes, "Result-Real", aug=True)
-    #real.add_dt_weighted(synth_dts[0], 0.1)
-    #real.train(ultra_red_classes, "Result-Mix", aug=False)
-    #real.train(ultra_red_classes, "Result-Mix", aug=True)
-
-    # for dt in real_dts:
-    #     dt.delete()
-
-    # for dt in synth_dts:
-    #     dt.delete()
+    taco = Dataset("miniTACO", "./datasets/miniTACO", 28, orig_classes)
+    taco.from_raw("./datasets/miniTACOraw", prep.mantain, skew=True, normalize=True)
+    taco.split(val=0.15, test=0.15)
+    taco.from_raw("./datasets/miniTACO", prep.r_crop_splited)
+    taco.train(orig_classes, "New-Results-Mini", base_model="yolo11s.pt", aug=False)
+    taco.train(orig_classes, "New-Results-Mini", base_model="yolo11s.pt", aug=True)
